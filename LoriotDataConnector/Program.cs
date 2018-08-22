@@ -10,13 +10,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebSocketSharp;
 using NLog.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace LoriotDataConnector
 {
     class Program
     {
-        private static string _conString = "Server=srwebgisadm01;Port=5432;Database=loriot;User Id = gc2; Password=Ta2ezatr;";
-
         static async Task Main(string[] args)
         {
             var host = new HostBuilder()
@@ -28,20 +27,30 @@ namespace LoriotDataConnector
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddHostedService<LoriotDataService>();
-                services.AddDbContext<DataContext>(options => options.UseNpgsql(_conString, o => o.UseNetTopologySuite()));
+
+                var token = hostContext.Configuration.GetSection("Settings").GetValue<string>("LoriotToken");
+                services.AddSingleton(x => new LoriotWebsocketHandler(token));
+
+                var conString = hostContext.Configuration.GetConnectionString("DatebaseDefault");              
+                services.AddDbContext<DataContext>(options => options.UseNpgsql(conString, o => o.UseNetTopologySuite()));
             })
             .ConfigureLogging((hostContext, configLogging) =>
              {
                  configLogging.AddNLog();
              })
-             .UseConsoleLifetime()
+            .UseConsoleLifetime()
             .Build();
 
             var db = host.Services.GetService<DataContext>();
 
-            db.Database.EnsureDeleted();
+            //db.Database.EnsureDeleted();
 
-            db.Database.EnsureCreated();
+            //db.Database.EnsureCreated();
+
+
+            var logger = host.Services.GetService<ILogger<Program>>();
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, ex) => logger.LogError(ex.ExceptionObject as Exception, "An exception occured");
 
             await host.RunAsync();
         }

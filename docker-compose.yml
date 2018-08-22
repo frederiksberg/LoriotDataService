@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  loriotdataconnector:
+    image: ${DOCKER_REGISTRY}loriotdataconnector
+    build:
+      context: .
+      dockerfile: LoriotDataConnector/Dockerfile

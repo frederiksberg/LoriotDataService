@@ -16,20 +16,20 @@ namespace LoriotDataConnector
     {
         private Microsoft.Extensions.Logging.ILogger _logger;
         private DataContext _db;
-        private WebSocket _webSocket;
+        private LoriotWebsocketHandler _webSocket;
 
-        public LoriotDataService(ILogger<LoriotDataService> logger, DataContext context)
+        public LoriotDataService(ILogger<LoriotDataService> logger, DataContext context, LoriotWebsocketHandler websocketHandler)
         {
             _logger = logger;
             _db = context;
+            _webSocket = websocketHandler;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting Service...");
 
-            _webSocket = new WebSocket("wss://iotnet.teracom.dk/app?token=vnoQXQAAABFpb3RuZXQudGVyYWNvbS5ka1r5y5z9-lZZzyA8ZRVR4jI=");
-            _webSocket.OnMessage += OnMessageReceived;
+            _webSocket.MessageRecieved += OnMessageReceived;
 
             _webSocket.Connect();
 
@@ -42,29 +42,26 @@ namespace LoriotDataConnector
             return Task.CompletedTask;
         }
 
-        void OnMessageReceived(object sender, MessageEventArgs e)
+        void OnMessageReceived(object sender, MessageRecievedEventArgs e)
         {
-            var command = JsonConvert.DeserializeObject<Command>(e.Data);
 
+            _logger.LogInformation($"Received Message: {e.MessageType}");
 
-            _logger.LogInformation($"Received Message: {command.cmd}");
-
-            switch (command.cmd)
+            switch (e.MessageType)
             {
-                case "rx":
+                case LoriotMessageType.UplinkMessage:
                     HandleUplinkMessage(e);
                     break;
-                case "gw":
+                case LoriotMessageType.GatewayMessage:
                     HandleGatewayInformation(e);
                     break;
                 default:
                     break;
             }
 
-
         }
 
-        private void HandleGatewayInformation(MessageEventArgs e)
+        private void HandleGatewayInformation(MessageRecievedEventArgs e)
         {
             var message = JsonConvert.DeserializeObject<GatewayInformationFrame>(e.Data);
 
@@ -80,7 +77,7 @@ namespace LoriotDataConnector
             _db.SaveChanges();
         }
 
-        private void HandleUplinkMessage(MessageEventArgs e)
+        private void HandleUplinkMessage(MessageRecievedEventArgs e)
         {
             var uplinkMessage = JsonConvert.DeserializeObject<UplinkMessage>(e.Data);
             var mesg = DecodeFrame(uplinkMessage);
