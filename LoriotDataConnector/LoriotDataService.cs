@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +34,7 @@ namespace LoriotDataConnector
 
             _logger.LogInformation("Service connected to websocket");
 
-            _webSocket.Send("{\"cmd\":\"cq\"}");
+            //_webSocket.Send("{\"cmd\":\"cq\"}");
 
 
 
@@ -55,10 +54,23 @@ namespace LoriotDataConnector
                 case LoriotMessageType.GatewayMessage:
                     HandleGatewayInformation(e);
                     break;
+                case LoriotMessageType.CacheMessage:
+                    HandleCacheMessage(e);
+                    break;
                 default:
                     break;
             }
 
+        }
+
+        private void HandleCacheMessage(MessageRecievedEventArgs e)
+        {
+            var cache = JsonConvert.DeserializeObject<CacheMessage>(e.Data)
+                .cache
+                .Select(x => DecodeFrame(x.data,x.ts));
+
+            _db.AddRange(cache);
+            _db.SaveChanges();
         }
 
         private void HandleGatewayInformation(MessageRecievedEventArgs e)
@@ -80,14 +92,14 @@ namespace LoriotDataConnector
         private void HandleUplinkMessage(MessageRecievedEventArgs e)
         {
             var uplinkMessage = JsonConvert.DeserializeObject<UplinkMessage>(e.Data);
-            var mesg = DecodeFrame(uplinkMessage);
+            var mesg = DecodeFrame(uplinkMessage.data,uplinkMessage.ts);
             _db.DecentFrames.Add(mesg);
             _db.SaveChanges();
         }
 
-        DecentSensorFrame DecodeFrame(UplinkMessage message)
+        DecentSensorFrame DecodeFrame(string data,long timestamp)
         {
-            string[] hexValuesSplit = Split(message.data, 2).ToArray();
+            string[] hexValuesSplit = Split(data, 2).ToArray();
 
             var version = Convert.ToInt32(hexValuesSplit[0], 16);
             var deviceId = Convert.ToInt32(hexValuesSplit[1] + hexValuesSplit[2], 16);
@@ -106,7 +118,7 @@ namespace LoriotDataConnector
                 Pressure = realPressure,
                 Temperature = realTemperature,
                 Battery = realBattery,
-                TimeStamp = DateTimeOffset.FromUnixTimeMilliseconds(message.ts)
+                TimeStamp = DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
             };
         }
 
