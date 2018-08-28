@@ -1,8 +1,0 @@
-﻿{
-  "ConnectionStrings": {
-    "DatebaseDefault": "Server=docker.for.win.localhost;Port=5432;Database=loriot;User Id = postgres; Password=Larslund123;"
-  },
-  "Settings": {
-    "LoriotToken": "vnoQXQAAABFpb3RuZXQudGVyYWNvbS5ka1r5y5z9-lZZzyA8ZRVR4jI="
-  }
-}

@@ -36,8 +36,6 @@ namespace LoriotDataConnector
 
             //_webSocket.Send("{\"cmd\":\"cq\"}");
 
-
-
             return Task.CompletedTask;
         }
 
