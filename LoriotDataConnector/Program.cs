@@ -43,9 +43,9 @@ namespace LoriotDataConnector
 
             var db = host.Services.GetService<DataContext>();
 
-            //db.Database.EnsureDeleted();
+            db.Database.EnsureDeleted();
 
-            //db.Database.EnsureCreated();
+            db.Database.EnsureCreated();
 
 
             var logger = host.Services.GetService<ILogger<Program>>();
