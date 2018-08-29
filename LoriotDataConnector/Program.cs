@@ -54,6 +54,5 @@ namespace LoriotDataConnector
 
             await host.RunAsync();
         }
-
     }
 }
