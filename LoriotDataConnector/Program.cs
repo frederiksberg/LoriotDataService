@@ -2,15 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using WebSocketSharp;
-using NLog.Extensions.Logging;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 
 namespace LoriotDataConnector
 {
@@ -18,6 +15,14 @@ namespace LoriotDataConnector
     {
         static async Task Main(string[] args)
         {
+            var log = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .WriteTo.File("logs.log")
+            .CreateLogger();
+
             var host = new HostBuilder()
             .ConfigureHostConfiguration(configHost =>
             {
@@ -31,22 +36,21 @@ namespace LoriotDataConnector
                 var token = hostContext.Configuration.GetSection("Settings").GetValue<string>("LoriotToken");
                 services.AddSingleton(x => new LoriotWebsocketHandler(token));
 
-                var conString = hostContext.Configuration.GetConnectionString("DatebaseDefault");              
+                var conString = hostContext.Configuration.GetConnectionString("DatabaseProd");
                 services.AddDbContext<DataContext>(options => options.UseNpgsql(conString, o => o.UseNetTopologySuite()));
             })
             .ConfigureLogging((hostContext, configLogging) =>
              {
-                 configLogging.AddNLog();
+                 configLogging.AddSerilog(logger:log);
              })
             .UseConsoleLifetime()
             .Build();
 
             var db = host.Services.GetService<DataContext>();
 
-            db.Database.EnsureDeleted();
+            //db.Database.EnsureDeleted();
 
-            db.Database.EnsureCreated();
-
+            //db.Database.EnsureCreated();
 
             var logger = host.Services.GetService<ILogger<Program>>();
 

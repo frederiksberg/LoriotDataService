@@ -38,6 +38,9 @@ namespace LoriotDataConnector
                 case "cq":
                     messageType = LoriotMessageType.CacheMessage;
                     break;
+                case "txd":
+                    messageType = LoriotMessageType.DownlinkConfirmation;
+                    break;
                 default:
                     throw new ApplicationException($"Recieved invalid message type: {command.cmd}");
             }
@@ -60,6 +63,7 @@ namespace LoriotDataConnector
     {
         UplinkMessage,
         GatewayMessage,
-        CacheMessage
+        CacheMessage,
+        DownlinkConfirmation
     }
 }

@@ -1,8 +1,0 @@
-﻿{
-  "ConnectionStrings": {
-    "DatebaseDefault": "Server=srwebgisadm01;Port=5432;Database=loriot;User Id = gc2; Password=Ta2ezatr;"
-  },
-  "Settings": {
-    "LoriotToken": "vnoQXQAAABFpb3RuZXQudGVyYWNvbS5ka1r5y5z9-lZZzyA8ZRVR4jI="
-  }
-}
