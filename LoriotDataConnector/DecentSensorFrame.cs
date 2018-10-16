@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace LoriotDataConnector
+namespace LoriotWebsocketClient
 {
-    class DecentSensorFrame
+    [Table("water_levels")]
+    class WaterLevel
     {
         [Column("id")]
         public long Id { get; set; }

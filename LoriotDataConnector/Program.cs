@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
-namespace LoriotDataConnector
+namespace LoriotWebsocketClient
 {
     class Program
     {
@@ -20,7 +20,7 @@ namespace LoriotDataConnector
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .Enrich.FromLogContext()
             .WriteTo.Console()
-            .WriteTo.File("logs.log")
+            .WriteTo.File("service.log")
             .CreateLogger();
 
             var host = new HostBuilder()
@@ -34,9 +34,9 @@ namespace LoriotDataConnector
                 services.AddHostedService<LoriotDataService>();
 
                 var token = hostContext.Configuration.GetSection("Settings").GetValue<string>("LoriotToken");
-                services.AddSingleton(x => new LoriotWebsocketHandler(token));
+                services.AddSingleton(x => new LoriotWebsocketHandler(token,x.GetService<ILogger<LoriotWebsocketHandler>>()));
 
-                var conString = hostContext.Configuration.GetConnectionString("DatabaseProd");
+                var conString = hostContext.Configuration.GetConnectionString("DatebaseDefault");
                 services.AddDbContext<DataContext>(options => options.UseNpgsql(conString, o => o.UseNetTopologySuite()));
             })
             .ConfigureLogging((hostContext, configLogging) =>

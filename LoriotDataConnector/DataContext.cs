@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LoriotDataConnector
+namespace LoriotWebsocketClient
 {
     class DataContext : DbContext
     {
-        public DbSet<DecentSensorFrame> DecentFrames { get; set; }
+        public DbSet<WaterLevel> DecentFrames { get; set; }
         public DbSet<GatewayInformation> GatewayInformation { get; set; }
 
         public DataContext(DbContextOptions options) : base(options)

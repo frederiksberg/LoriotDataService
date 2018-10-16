@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace LoriotDataConnector
+namespace LoriotWebsocketClient
 {
     class LoriotDataService : IHostedService
     {
@@ -100,7 +100,7 @@ namespace LoriotDataConnector
             _db.SaveChanges();
         }
 
-        DecentSensorFrame DecodeFrame(string data,long timestamp)
+        WaterLevel DecodeFrame(string data,long timestamp)
         {
             string[] hexValuesSplit = Split(data, 2).ToArray();
 
@@ -115,7 +115,7 @@ namespace LoriotDataConnector
             var realTemperature = (((float)temperature - 384) / 64000 * 200 - 50);
             var realBattery = ((float)battery / 1000);
 
-            return new DecentSensorFrame
+            return new WaterLevel
             {
                 DeviceId = deviceId,
                 Pressure = realPressure,
